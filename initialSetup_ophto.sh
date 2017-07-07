@@ -6,6 +6,8 @@
 #	- Updates/upgrades packages
 #	- Sets Timezone
 #	- Installs dependencies and packages required for OpenCV
+#	- Upgrades and installs required pip packages
+#	- Downloads and unzips OpenCV source code + extra modules
 #
 # AUTHOR: Mohammad Odeh
 # DATE	: Jul. 5th, 2017
@@ -70,6 +72,28 @@ function echo_warning() {
 	echo "    ($1)"
 }
 
+# use the given INSTALL_LOG or set it to a random file in /tmp
+function set_install_log() {
+	if [[ ! $INSTALL_LOG ]]; then
+		export INSTALL_LOG="/home/pi/install_$DATETIME.log"
+	fi
+	if [ -e "$INSTALL_LOG" ]; then
+		exit_with_failure "$INSTALL_LOG already exists"
+	fi
+}
+
+################################################################################
+# Script configuration
+################################################################################
+echo
+echo
+
+# Get current date and time
+DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
+
+# Create install log
+set_install_log
+
 ################################################################################
 # Configure system-wide settings
 ################################################################################
@@ -77,7 +101,7 @@ echo_title 	"Configure System"
 echo_step	"Configuring system-wide settings"; echo
 
 # Timezone
-echo_step	"	Setting Timezone"
+echo_step	"  Setting Timezone"
 TIMEZONE="US/Eastern"      
 echo $TIMEZONE > /etc/timezone                     
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
@@ -94,16 +118,18 @@ fi
 echo_title 	"Purge"
 echo_step	"Preparing to purge unnecessary packages"; echo
 
-echo_step	"	Wolfram Alpha"
-sudo apt-get -qq purge wolfram*
+# Purge Wolfram Alpha
+echo_step	"  Wolfram Alpha"
+sudo apt-get -q -y purge wolfram* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to purge. Package has been either purged earlier or doesn't exist"
 else
 	echo_success
 fi
 
-echo_step 	"	Libre Office Suite"
-sudo apt-get -qq purge libreoffice*
+# Purge LibreOffice
+echo_step 	"  Libre Office Suite"
+sudo apt-get -q -y purge libreoffice* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to purge. Package has been either purged earlier or doesn't exist"
 else
@@ -116,32 +142,36 @@ fi
 echo_title 	"Update/Upgrade System Packages"
 echo_step	"Preparing to upgrade system packages"; echo
 
-echo_step	"	Updating packages index"
-sudo apt-get -qq update
+# Update packages index
+echo_step	"  Updating packages index"
+sudo apt-get -q -y update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Upgrading packages"
-sudo apt-get -qq dist-upgrade
+# Upgrade packages
+echo_step	"  Upgrading packages"
+sudo apt-get -q -y dist-upgrade >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Removing unused dependencies/packages"
-sudo apt-get -qq autoremove
+# Remove unused packages/dependencies
+echo_step	"  Removing unused dependencies/packages"
+sudo apt-get -q -y autoremove >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
+# Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update
+sudo rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -154,58 +184,129 @@ fi
 echo_title 	"OpenCV Dependencies"
 echo_step	"Installing Required packages for OpenCV"; echo
 
-echo_step	"	Installing: Developer tools"
-sudo apt-get -qq install build-essential cmake pkg-config
+echo_step	"  Installing: Developer tools"
+sudo apt-get -q -y install build-essential cmake pkg-config >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: Image I/O packages"
-sudo apt-get -qq install libjpeg8-dev libjasper-dev libpng12-dev
+echo_step	"  Installing: Image I/O packages"
+sudo apt-get -q -y install libjpeg8-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: GTK development library"
-sudo apt-get -qq install libgtk2.0-dev
+echo_step	"  Installing: GTK development library"
+sudo apt-get -q -y install libgtk2.0-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: Video processing packages (1)"
-sudo apt-get -qq install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
+echo_step	"  Installing: Video processing packages (1)"
+sudo apt-get -q -y install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: Video processing packages (2)"
-sudo apt-get -qq install libxvidcore-dev libx264-dev
+echo_step	"  Installing: Video processing packages (2)"
+sudo apt-get -q -y install libxvidcore-dev libx264-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: Optimization/Development libraries"
-sudo apt-get -qq install libatlas-base-dev gfortran python2.7-dev
+echo_step	"  Installing: Optimization/Development libraries"
+sudo apt-get -q -y install libatlas-base-dev gfortran python2.7-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"	Installing: Text & string output on GUI" 
-sudo apt-get -qq install libgtkglext1 libgtkglext1-dev
+echo_step	"  Installing: Text & string output on GUI" 
+sudo apt-get -q -y install libgtkglext1 libgtkglext1-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+################################################################################
+# Installing pip and pip packages
+################################################################################
+echo_title 	"PIP"
+echo_step	"Installing PIP + packages"; echo
+cd ~
+
+# Download/Install PIP
+echo_step	"  Installing latest PIP release"
+sudo wget https://bootstrap.pypa.io/get-pip.py -a "$INSTALL_LOG"
+sudo python get-pip.py >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to install"
+else
+	echo_success
+fi
+
+# Download/Install Numpy
+echo_step	"  Upgrading numpy (Please wait. This might take a while [ETA 10mins])"
+sudo pip install --upgrade numpy >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+# Upgrade pyserial
+echo_step	"  Upgrading pyserial"
+sudo pip install --upgrade pyserial >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+# Install imutils
+echo_step	"  Installing imutils"
+sudo pip install imutils >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+################################################################################
+# Download OpenCV from source
+################################################################################
+echo_title 	"OpenCV Source Code"
+echo_step	"Downloading OpenCV source code + extra modules"; echo
+cd ~
+
+# Download OpenCV (ver3.1.0) source code
+echo_step	"  Downloading & unzipping source code"
+sudo wget -O opencv.zip https://github.com/opencv/opencv/archive/3.1.0.zip -a "$INSTALL_LOG"
+sudo unzip opencv.zip >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to download from source"
+else
+	echo_success
+fi
+
+# Download OpenCV (ver3.1.0) extra modules
+echo_step	"  Downloading & unzipping extra modules"
+sudo wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.1.0.zip -a "$INSTALL_LOG"
+sudo unzip opencv_contrib.zip >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to download from source"
 else
 	echo_success
 fi
@@ -214,18 +315,25 @@ fi
 # Final Steps
 ################################################################################
 echo_title 	"Clean Up"
-echo_step	"Cleaning up"
+echo_step	"Cleaning up"; echo
 
+# Clean cache
 echo_step	"  Cleaning caches"
-sudo apt-get -qq autoclean
+sudo apt-get -q -y autoclean >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"REBOOTING IN 15 SECONDS!!"; echo
-sleep 10
-echo_step	"REBOOTING IN 5 SECONDS!!"
+# Reboot
+echo_step	"Rebooting in 15 Seconds"; echo
 sleep 5
+echo_step	"Rebooting in 10 Seconds"; echo
+sleep 5
+echo_step	"Rebooting in 5 Seconds"; sleep 1
+echo_step	", 4"; sleep 1
+echo_step	", 3"; sleep 1
+echo_step   ", 2"; sleep 1
+echo_step   ", 1"; sleep 1
 sudo reboot

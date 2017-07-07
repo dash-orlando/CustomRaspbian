@@ -69,6 +69,28 @@ function echo_warning() {
 	echo "    ($1)"
 }
 
+# use the given INSTALL_LOG or set it to a random file in /tmp
+function set_install_log() {
+	if [[ ! $INSTALL_LOG ]]; then
+		export INSTALL_LOG="/home/pi/install_$DATETIME.log"
+	fi
+	if [ -e "$INSTALL_LOG" ]; then
+		exit_with_failure "$INSTALL_LOG already exists"
+	fi
+}
+
+################################################################################
+# Script configuration
+################################################################################
+echo
+echo
+
+# Get current date and time
+DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
+
+# Create install log
+set_install_log
+
 ################################################################################
 # Configure system-wide settings
 ################################################################################
@@ -93,16 +115,18 @@ fi
 echo_title 	"Purge"
 echo_step	"Preparing to purge unnecessary packages"; echo
 
+# Purge Wolfram Alpha
 echo_step	"  Wolfram Alpha"
-sudo apt-get -qq purge wolfram*
+sudo apt-get -q -y purge wolfram* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to purge. Package has been either purged earlier or doesn't exist"
 else
 	echo_success
 fi
 
+# Purge LibreOffice
 echo_step 	"  Libre Office Suite"
-sudo apt-get -qq purge libreoffice*
+sudo apt-get -q -y purge libreoffice* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to purge. Package has been either purged earlier or doesn't exist"
 else
@@ -115,34 +139,82 @@ fi
 echo_title 	"Update/Upgrade System Packages"
 echo_step	"Preparing to upgrade system packages"; echo
 
+# Update packages index
 echo_step	"  Updating packages index"
-sudo apt-get -qq update
+sudo apt-get -q -y update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
+# Upgrade packages
 echo_step	"  Upgrading packages"
-sudo apt-get -qq dist-upgrade
+sudo apt-get -q -y dist-upgrade >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
+# Remove unused packages/dependencies
 echo_step	"  Removing unused dependencies/packages"
-sudo apt-get -qq autoremove
+sudo apt-get -q -y autoremove >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
+# Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update
+sudo rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+################################################################################
+# Installing pip and pip packages
+################################################################################
+echo_title 	"PIP"
+echo_step	"Installing PIP + packages"; echo
+cd ~
+
+# Download/Install PIP
+echo_step	"  Installing latest PIP release"
+sudo wget https://bootstrap.pypa.io/get-pip.py -a "$INSTALL_LOG"
+sudo python get-pip.py >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to install"
+else
+	echo_success
+fi
+
+# Download/Install Numpy
+echo_step	"  Upgrading numpy (Please wait. This might take a while [ETA 10mins])"
+sudo pip install --upgrade numpy >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+# Upgrade pyserial
+echo_step	"  Upgrading pyserial"
+sudo pip install --upgrade pyserial >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+# Install imutils
+echo_step	"  Installing imutils"
+sudo pip install imutils >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to upgrade"
 else
 	echo_success
 fi
@@ -151,18 +223,25 @@ fi
 # Final Steps
 ################################################################################
 echo_title 	"Clean Up"
-echo_step	"Cleaning up"
+echo_step	"Cleaning up"; echo
 
+# Clean cache
 echo_step	"  Cleaning caches"
-sudo apt-get -qq autoclean
+sudo apt-get -q -y autoclean >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
-echo_step	"REBOOTING IN 15 SECONDS!!"; echo
-sleep 10
-echo_step	"REBOOTING IN 5 SECONDS!!"
+# Reboot
+echo_step	"Rebooting in 15 Seconds"; echo
 sleep 5
+echo_step	"Rebooting in 10 Seconds"; echo
+sleep 5
+echo_step	"Rebooting in 5 Seconds"; sleep 1
+echo_step	", 4"; sleep 1
+echo_step	", 3"; sleep 1
+echo_step   ", 2"; sleep 1
+echo_step   ", 1"; sleep 1
 sudo reboot
