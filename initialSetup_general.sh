@@ -180,7 +180,7 @@ fi
 ################################################################################
 echo_title 	"PIP"
 echo_step	"Installing PIP + packages"; echo
-cd ~
+cd /home/pi/
 
 # Download/Install PIP
 echo_step	"  Installing latest PIP release"
@@ -192,7 +192,7 @@ else
 	echo_success
 fi
 
-# Download/Install Numpy
+# Upgrade Numpy
 echo_step	"  Upgrading numpy (Please wait. This might take a while [ETA 10mins])"
 sudo pip install --upgrade numpy >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
@@ -214,7 +214,7 @@ fi
 echo_step	"  Installing imutils"
 sudo pip install imutils >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to upgrade"
+	echo_warning "Failed to install"
 else
 	echo_success
 fi
@@ -239,7 +239,7 @@ echo_step	"Rebooting in 15 Seconds"; echo
 sleep 5
 echo_step	"Rebooting in 10 Seconds"; echo
 sleep 5
-echo_step	"Rebooting in 5 Seconds"; sleep 1
+echo_step	"Rebooting in 5"; sleep 1
 echo_step	", 4"; sleep 1
 echo_step	", 3"; sleep 1
 echo_step   ", 2"; sleep 1

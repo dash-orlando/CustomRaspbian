@@ -245,7 +245,7 @@ fi
 ################################################################################
 echo_title 	"PIP"
 echo_step	"Installing PIP + packages"; echo
-cd ~
+cd /home/pi/
 
 # Download/Install PIP
 echo_step	"  Installing latest PIP release"
@@ -257,7 +257,7 @@ else
 	echo_success
 fi
 
-# Download/Install Numpy
+# Upgrade Numpy
 echo_step	"  Upgrading numpy (Please wait. This might take a while [ETA 10mins])"
 sudo pip install --upgrade numpy >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
@@ -279,7 +279,7 @@ fi
 echo_step	"  Installing imutils"
 sudo pip install imutils >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to upgrade"
+	echo_warning "Failed to install"
 else
 	echo_success
 fi
@@ -289,26 +289,40 @@ fi
 ################################################################################
 echo_title 	"OpenCV Source Code"
 echo_step	"Downloading OpenCV source code + extra modules"; echo
-cd ~
+cd /home/pi/
 
 # Download OpenCV (ver3.1.0) source code
-echo_step	"  Downloading & unzipping source code"
-sudo wget -O opencv.zip https://github.com/opencv/opencv/archive/3.1.0.zip -a "$INSTALL_LOG"
-sudo unzip opencv.zip >>"$INSTALL_LOG"
+echo_step	"  Downloading source code"
+sudo wget -O /home/pi/opencv.zip https://github.com/opencv/opencv/archive/3.1.0.zip -a "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
 	echo_success
+
+	echo_step	"	  Unzipping..."
+	sudo unzip opencv.zip >>"$INSTALL_LOG"
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to unzip"
+	else
+		echo_success
+	fi
 fi
 
 # Download OpenCV (ver3.1.0) extra modules
-echo_step	"  Downloading & unzipping extra modules"
-sudo wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.1.0.zip -a "$INSTALL_LOG"
-sudo unzip opencv_contrib.zip >>"$INSTALL_LOG"
+echo_step	"  Downloading extra modules"
+sudo wget -O /home/pi/opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.1.0.zip -a "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
 	echo_success
+	
+	echo_step	"	  Unzipping..."
+	sudo unzip opencv_contrib.zip >>"$INSTALL_LOG"
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to unzip"
+	else
+		echo_success
+	fi
 fi
 
 ################################################################################
@@ -331,7 +345,7 @@ echo_step	"Rebooting in 15 Seconds"; echo
 sleep 5
 echo_step	"Rebooting in 10 Seconds"; echo
 sleep 5
-echo_step	"Rebooting in 5 Seconds"; sleep 1
+echo_step	"Rebooting in 5"; sleep 1
 echo_step	", 4"; sleep 1
 echo_step	", 3"; sleep 1
 echo_step   ", 2"; sleep 1
