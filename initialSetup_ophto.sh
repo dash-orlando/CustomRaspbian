@@ -4,18 +4,38 @@
 # Ophto Version:
 #	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Updates/upgrades packages
-#	- Sets Timezone
+#	- Sets Timezone and keyboard
 #	- Installs dependencies and packages required for OpenCV
 #	- Upgrades and installs required pip packages
 #	- Downloads and unzips OpenCV source code + extra modules
+#	- Compiles and builds OpenCV
+#	- Post-setup cleanup
 #
-# AUTHOR: Mohammad Odeh
-# DATE	: Jul. 5th, 2017
+# In other words, the script does ALL the work in setting up the environment
+#
+# AUTHOR	: Mohammad Odeh
+# DATE		: Jul.  5th, 2017
+# MODIFIED	: Jul. 10th, 2017
 #
 
 ################################################################################
 # Terminal output helpers
 ################################################################################
+
+# check_if_root_or_die() verifies if the script is being run as root and exits
+# otherwise (i.e. die).
+function check_if_root_or_die() {
+	echo_step "Checking installation privileges"
+	echo -e "\nid -u" >>"$INSTALL_LOG"
+	SCRIPT_UID=$(id -u)
+	if [ "$OPERATING_SYSTEM" = "CYGWIN" ]; then
+		# Administrator really isn't equivalent to POSIX root.
+		echo_step_info "Under Cygwin, you do not have to be a root"
+	elif [ "$SCRIPT_UID" != 0 ]; then
+		exit_with_failure "Please run as root"
+	fi
+	echo_success
+}
 
 # echo_equals() outputs a line with =
 #   seq does not exist under OpenBSD
@@ -94,11 +114,23 @@ DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
 # Create install log
 set_install_log
 
+# Check if the script is being run with root (sudo) privilages or not
+check_if_root_or_die
+
 ################################################################################
 # Configure system-wide settings
 ################################################################################
 echo_title 	"Configure System"
 echo_step	"Configuring system-wide settings"; echo
+
+# Keyboard
+echo_step	"  Setting keyboard to US layout"
+stxkbmap us
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to set keyboard"
+else
+	echo_success
+fi
 
 # Timezone
 echo_step	"  Setting Timezone"
@@ -323,6 +355,52 @@ else
 	else
 		echo_success
 	fi
+fi
+
+################################################################################
+# Compiling and Building OpenCV
+################################################################################
+echo_title 	"Compile"
+echo_step	"Compiling/building OpenCV using 2 cores"; echo
+
+# Navigate to proper build directory
+cd /home/pi/opencv-3.1.0/
+sudo mkdir build
+cd /home/pi/opencv-3.1.0/build/
+
+# Compile
+# NOTE: TBB and OpenMP are enabled to improve FPS.
+sudo cmake \
+-D CMAKE_BUILD_TYPE=RELEASE \
+-D BUILD_TBB=ON \
+-D WITH_TBB=ON \
+-D WITH_OPENMP=ON \
+-D WITH_OPENGL=ON \
+-D CMAKE_INSTALL_PREFIX=/usr/local \
+-D INSTALL_C_EXAMPLES=OFF \
+-D INSTALL_PYTHON_EXAMPLES=ON \
+-D BUILD_EXAMPLES=ON \
+-D OPENCV_EXTRA_MODULES_PATH=/home/pi/opencv_contrib-3.1.0/modules ..
+
+# Insert newline for aesthetics
+echo
+
+# Build using 2 cores to avoid build errors
+echo_step	"Building..."; echo
+sudo make -j2
+if [ "$?" -ne 0 ]; then
+	echo_warning "Build: ERROR"
+else
+	echo; echo_step "Build: DONE"; echo_success
+fi
+
+# Install and create links
+sudo make install
+sudo ldconfig
+if [ "$?" -ne 0 ]; then
+	echo_warning "Install: ERROR"
+else
+	echo; echo_step "Install: DONE"; echo_success
 fi
 
 ################################################################################

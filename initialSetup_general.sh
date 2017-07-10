@@ -4,15 +4,32 @@
 # General Version:
 #	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Updates/upgrades packages
-#	- Sets Timezone
+#	- Sets Timezone and keyboard
+#	- Post-setup cleanup
 #
-# AUTHOR: Mohammad Odeh
-# DATE	: Jul. 5th, 2017
+# AUTHOR	: Mohammad Odeh
+# DATE		: Jul.  5th, 2017
+# MODIFIED	: Jul. 10th, 2017
 #
 
 ################################################################################
 # Terminal output helpers
 ################################################################################
+
+# check_if_root_or_die() verifies if the script is being run as root and exits
+# otherwise (i.e. die).
+function check_if_root_or_die() {
+	echo_step "Checking installation privileges"
+	echo -e "\nid -u" >>"$INSTALL_LOG"
+	SCRIPT_UID=$(id -u)
+	if [ "$OPERATING_SYSTEM" = "CYGWIN" ]; then
+		# Administrator really isn't equivalent to POSIX root.
+		echo_step_info "Under Cygwin, you do not have to be a root"
+	elif [ "$SCRIPT_UID" != 0 ]; then
+		exit_with_failure "Please run as root"
+	fi
+	echo_success
+}
 
 # echo_equals() outputs a line with =
 #   seq does not exist under OpenBSD
@@ -91,11 +108,23 @@ DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
 # Create install log
 set_install_log
 
+# Check if the script is being run with root (sudo) privilages or not
+check_if_root_or_die
+
 ################################################################################
 # Configure system-wide settings
 ################################################################################
 echo_title 	"Configure System"
 echo_step	"Configuring system-wide settings"; echo
+
+# Keyboard
+echo_step	"  Setting keyboard to US layout"
+stxkbmap us
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to set keyboard"
+else
+	echo_success
+fi
 
 # Timezone
 echo_step	"  Setting Timezone"
