@@ -71,6 +71,13 @@ function echo_right() {
 	echo "$TEXT"
 }
 
+# echo_failure() outputs [ FAILED ] in red, at the rightmost side of the screen.
+function echo_failure() {
+	tput setaf 1 0 0 # 1 = red
+	echo_right "[ FAILED ]"
+	tput sgr0  # reset terminal
+}
+
 # echo_success() outputs [ OK ] in green, at the rightmost side of the screen.
 function echo_success() {
 	tput setaf 2 0 0 # 2 = green
@@ -94,6 +101,26 @@ function set_install_log() {
 	if [ -e "$INSTALL_LOG" ]; then
 		exit_with_failure "$INSTALL_LOG already exists"
 	fi
+}
+
+# exit_with_message() outputs and logs a message before exiting the script.
+function exit_with_message() {
+	echo
+	echo "$1"
+	echo -e "\n$1" >>"$INSTALL_LOG"
+	if [[ $INSTALL_LOG && "$2" -eq 1 ]]; then
+		echo "For additional information, check the install log: $INSTALL_LOG"
+	fi
+	echo
+	#debug_variables
+	echo
+	exit 1
+}
+
+# exit_with_failure() calls echo_failure() and exit_with_message().
+function exit_with_failure() {
+	echo_failure
+	exit_with_message "FAILURE: $1" 1
 }
 
 ################################################################################
