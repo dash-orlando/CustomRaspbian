@@ -9,13 +9,14 @@
 #	- Upgrades and installs required pip packages
 #	- Downloads and unzips OpenCV source code + extra modules
 #	- Compiles and builds OpenCV
+#	- Fetches repo from Github
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Jul. 10th, 2017
+# MODIFIED	: Jul. 12th, 2017
 #
 
 ################################################################################
@@ -134,6 +135,11 @@ function exit_with_failure() {
 ################################################################################
 echo
 echo
+
+# Define useful variables
+GIT_USERNAME="pd3dLab"
+GIT_PASSWORD="pd3dLabatIST"
+GIT_DIRECTORY="csec/repos/"
 
 # Get current date and time
 DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
@@ -397,6 +403,7 @@ cd /home/pi/opencv-3.1.0/build/
 
 # Compile
 # NOTE: TBB and OpenMP are enabled to improve FPS.
+echo_step 	"  Compiling"; echo
 sudo cmake \
 -D CMAKE_BUILD_TYPE=RELEASE \
 -D BUILD_TBB=ON \
@@ -413,7 +420,7 @@ sudo cmake \
 echo
 
 # Build using 2 cores to avoid build errors
-echo_step	"Building..."; echo
+echo_step	"  Building..."; echo
 sudo make -j2
 if [ "$?" -ne 0 ]; then
 	echo_warning "Build: ERROR"
@@ -429,6 +436,50 @@ if [ "$?" -ne 0 ]; then
 else
 	echo; echo_step "Install: DONE"; echo_success
 fi
+
+################################################################################
+# Fetch Github Repository and Setup Directories
+################################################################################
+echo_title 	"Setup Repo/Directories"
+echo_step	"Fetching repository from Github"; echo
+
+# Create directory for repo
+cd /home/pi/
+sudo mkdir -p "$GIT_DIRECTORY"
+cd /home/pi/"$GIT_DIRECTORY"
+
+echo_step 	"  Cloning into $GIT_DIRECTORY"
+# git clone https://username:password@github.com/username/repository.git
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/ophto >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to fetch repo"
+else
+	echo_success
+
+	# Create a user-friendly local copy on Desktop
+	echo_step	"  Creating local directory"
+	cd /home/pi/
+	sudo mkdir ophto
+
+	# Copy program
+	echo_step	"    Copying program"
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/ophto/Software/Python/Stable /home/pi/Desktop/ophto/
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to copy"
+	else
+		echo_success
+	fi
+	
+	# Copy overlays
+	echo_step	"    Copying overlays"
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/ophto/Images/Ophthalmoscope_images/Alpha /home/pi/Desktop/ophto/
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to copy"
+	else
+		echo_success
+	fi
+fi
+
 
 ################################################################################
 # Final Steps
