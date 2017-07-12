@@ -450,14 +450,14 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/ophto >>"$INSTALL_LOG"
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/ophto >"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
 	echo_success
 
 	# Create a user-friendly local copy on Desktop
-	echo_step	"  Creating local directory"
+	echo_step	"  Creating local directory"; echo
 	cd /home/pi/
 	sudo mkdir ophto
 
