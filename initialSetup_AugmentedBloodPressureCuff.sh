@@ -1,23 +1,23 @@
 #!/bin/bash
 #
 # Automate the configuration of the Raspbian image
-# Ophto Version:
+# Augmented Blood Pressure Cuff Version:
 #	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Updates/upgrades packages
 #	- Sets Timezone and keyboard
-#	- Installs dependencies and packages required for OpenCV
-#	- Upgrades and installs required pip packages
-#	- Downloads and unzips OpenCV source code + extra modules
-#	- Compiles and builds OpenCV
+#  	- Allocates required GPU memory
+#	- Setup 10.1" screen
+#	- Installs packages and dependencies for:
+#		* PyQt4
+#		* ADS Unit
+#	- Downloads and installs ADS1x15 library
 #	- Fetches repo from Github
-#       - Enables camera interface + allocates 512 GPU memory
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
 #
 # AUTHOR	: Mohammad Odeh
-# DATE		: Jul.  5th, 2017
-# MODIFIED	: Aug.  7th, 2017
+# DATE		: Aug.  7th, 2017
 #
 
 ################################################################################
@@ -177,12 +177,24 @@ else
 	echo_success
 fi
 
-# Enable camera interface + split GPU memory
-echo_step	"  Enabling Camera/Allocating Memory"
-sudo sed -i -e 's/start_x=0/start_x=1/g' /boot/config.txt
-sudo sed -i -e 's/gpu_mem=64/gpu_mem=512/g' /boot/config.txt
+# Enable I2C + split GPU memory
+echo_step	"  Enabling I2C/Allocating Memory"
+sudo sed -i -e 's/#dtparam=i2c_arm=on/dtparam=i2c_arm=on/g' /boot/config.txt
+sudo sed -i -e 's/gpu_mem=64/gpu_mem=256/g' /boot/config.txt
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to enable camera/allocate memory"
+	echo_warning "Failed to enable I2C/allocate memory"
+else
+	echo_success
+fi
+
+# Setting up 10.1" Screen
+echo_step	"  Setting up 10.1\" Screen"
+sudo sed -i -e 's/#hdmi_force_hotplug=1/hdmi_force_hotplug=1/g' /boot/config.txt
+sudo sed -i -e 's/#hdmi_group=1/hdmi_group=2/g' /boot/config.txt
+sudo sed -i -e 's/#hdmi_mode=1/hdmi_mode=28/g' /boot/config.txt
+sudo sed -i -e 's/#hdmi_drive=2/hdmi_drive=1/g' /boot/config.txt
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to setup 10.1\" screen"
 else
 	echo_success
 fi
@@ -255,72 +267,10 @@ else
 fi
 
 ################################################################################
-# Installing OpenCV dependencies
-################################################################################
-echo_title 	"OpenCV Dependencies"
-echo_step	"Installing Required packages for OpenCV"; echo
-
-echo_step	"  Installing: Developer tools"
-sudo apt-get -q -y install build-essential cmake pkg-config >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: Image I/O packages"
-sudo apt-get -q -y install libjpeg8-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: GTK development library"
-sudo apt-get -q -y install libgtk2.0-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: Video processing packages (1)"
-sudo apt-get -q -y install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: Video processing packages (2)"
-sudo apt-get -q -y install libxvidcore-dev libx264-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: Optimization/Development libraries"
-sudo apt-get -q -y install libatlas-base-dev gfortran python2.7-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"  Installing: Text & string output on GUI" 
-sudo apt-get -q -y install libgtkglext1 libgtkglext1-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-################################################################################
-# Installing pip and pip packages
+# Upgrading PIP & PIP packages
 ################################################################################
 echo_title 	"PIP"
-echo_step	"Installing PIP + packages"; echo
+echo_step	"Upgrading PIP & PIP packages"; echo
 cd /home/pi/
 
 # Download/Install PIP
@@ -351,101 +301,50 @@ else
 	echo_success
 fi
 
-# Install imutils
-echo_step	"  Installing imutils"
-sudo pip install imutils >>"$INSTALL_LOG"
+################################################################################
+# Installing PyQt4 + dependencies
+################################################################################
+echo_title 	"Required Packages and Dependencies"
+
+echo_step	"Installing PyQt4"; echo
+sudo apt-get -q -y install python-qt4 python-qt4-dbus python-qt4-dev python-qt4-doc python-qt4-gl python-qt4-phonon python-qt4-sql python-qtmobility python-qwt3d-qt4 python-qwt5-qt4 >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to install"
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+echo_step	"Installing ADC dependencies"; echo
+sudo apt-get -q -y install git build-essential python-dev >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
 else
 	echo_success
 fi
 
 ################################################################################
-# Download OpenCV from source
+# Download ADS1x15 Library
 ################################################################################
-echo_title 	"OpenCV Source Code"
-echo_step	"Downloading OpenCV source code + extra modules"; echo
+echo_title 	"ADS1x15 Library"
+echo_step	"Downloading ADS1x15 library"; echo
 cd /home/pi/
 
-# Download OpenCV (ver3.1.0) source code
+# Download source code
 echo_step	"  Downloading source code"
-sudo wget -O /home/pi/opencv.zip https://github.com/opencv/opencv/archive/3.1.0.zip -a "$INSTALL_LOG"
+sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git > "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
 	echo_success
 
-	echo_step	"	  Unzipping..."
-	sudo unzip opencv.zip >>"$INSTALL_LOG"
+	echo_step	"	  Installing..."
+	cd Adafruit_Python_ADS1x15
+	sudo python setup.py install >>"$INSTALL_LOG"
 	if [ "$?" -ne 0 ]; then
-		echo_warning "Failed to unzip"
+		echo_warning "Failed to install"
 	else
 		echo_success
 	fi
-fi
-
-# Download OpenCV (ver3.1.0) extra modules
-echo_step	"  Downloading extra modules"
-sudo wget -O /home/pi/opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.1.0.zip -a "$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to download from source"
-else
-	echo_success
-	
-	echo_step	"	  Unzipping..."
-	sudo unzip opencv_contrib.zip >>"$INSTALL_LOG"
-	if [ "$?" -ne 0 ]; then
-		echo_warning "Failed to unzip"
-	else
-		echo_success
-	fi
-fi
-
-################################################################################
-# Compiling and Building OpenCV
-################################################################################
-echo_title 	"Compile"
-echo_step	"Compiling/building OpenCV using 2 cores"; echo
-
-# Navigate to proper build directory
-cd /home/pi/opencv-3.1.0/
-sudo mkdir build
-cd /home/pi/opencv-3.1.0/build/
-
-# Compile
-# NOTE: TBB and OpenMP are enabled to improve FPS.
-echo_step 	"  Compiling"; echo
-sudo cmake \
--D CMAKE_BUILD_TYPE=RELEASE \
--D BUILD_TBB=ON \
--D WITH_TBB=ON \
--D WITH_OPENMP=ON \
--D WITH_OPENGL=ON \
--D CMAKE_INSTALL_PREFIX=/usr/local \
--D INSTALL_C_EXAMPLES=OFF \
--D INSTALL_PYTHON_EXAMPLES=ON \
--D BUILD_EXAMPLES=ON \
--D OPENCV_EXTRA_MODULES_PATH=/home/pi/opencv_contrib-3.1.0/modules ..
-
-# Insert newline for aesthetics
-echo
-
-# Build using 2 cores to avoid build errors
-echo_step	"  Building..."; echo
-sudo make -j2
-if [ "$?" -ne 0 ]; then
-	echo_warning "Build: ERROR"
-else
-	echo; echo_step "Build: DONE"; echo_success
-fi
-
-# Install and create links
-sudo make install
-sudo ldconfig
-if [ "$?" -ne 0 ]; then
-	echo_warning "Install: ERROR"
-else
-	echo; echo_step "Install: DONE"; echo_success
 fi
 
 ################################################################################
@@ -461,7 +360,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedOphthalmoscope >"$INSTALL_LOG" 2>&1
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedBloodPressureCuff >"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
@@ -470,20 +369,11 @@ else
 	# Create a user-friendly local copy on Desktop
 	echo_step	"  Creating local directory"; echo
 	cd /home/pi/
-	sudo mkdir AugmentedOphthalmoscope
+	sudo mkdir AugmentedBloodPressureCuff
 
 	# Copy program
 	echo_step	"    Copying program"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedOphthalmoscope/Software/Python/Stable /home/pi/Desktop/AugmentedOphthalmoscope/
-	if [ "$?" -ne 0 ]; then
-		echo_warning "Failed to copy"
-	else
-		echo_success
-	fi
-	
-	# Copy overlays
-	echo_step	"    Copying overlays"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedOphthalmoscope/Images/Ophthalmoscope_images/Alpha /home/pi/Desktop/AugmentedOphthalmoscope/
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedBloodPressureCuff/Software/Python /home/pi/Desktop/AugmentedBloodPressureCuff/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
