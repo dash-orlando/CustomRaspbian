@@ -2,15 +2,16 @@
 #
 # Automate the configuration of the Raspbian image
 # AugmentedOphthalmoscope Version:
+#	- Sets Timezone and keyboard
+#       - Disable blank screen forever
+#       - Enables camera interface + allocates 512 GPU memory
 #	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Updates/upgrades packages
-#	- Sets Timezone and keyboard
 #	- Installs dependencies and packages required for OpenCV
 #	- Upgrades and installs required pip packages
 #	- Downloads and unzips OpenCV source code + extra modules
 #	- Compiles and builds OpenCV
 #	- Fetches repo from Github
-#       - Enables camera interface + allocates 512 GPU memory
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
@@ -173,6 +174,15 @@ echo $TIMEZONE > /etc/timezone
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set timezone"
+else
+	echo_success
+fi
+
+# Disable blank screen (aka screensaver)
+echo_step	"  Disabling blank screen"
+sudo sed -i -e 's/#xserver-command=X/xserver-command=X -s 0 -dpms/g' /etc/lightdm/lightdm.conf
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to setup 10.1\" screen"
 else
 	echo_success
 fi

@@ -1,12 +1,13 @@
 #!/bin/bash
 #
 # Automate the configuration of the Raspbian image
-# Augmented Blood Pressure Cuff Version:
-#	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
-#	- Updates/upgrades packages
+# AugmentedBloodPressureCuff Version:
 #	- Sets Timezone and keyboard
+#       - Disable blank screen forever
 #  	- Allocates required GPU memory
 #	- Setup 10.1" screen
+#	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
+#	- Updates/upgrades packages
 #	- Installs packages and dependencies for:
 #		* PyQt4
 #		* ADS Unit
@@ -173,6 +174,15 @@ echo $TIMEZONE > /etc/timezone
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set timezone"
+else
+	echo_success
+fi
+
+# Disable blank screen (aka screensaver)
+echo_step	"  Disabling blank screen"
+sudo sed -i -e 's/#xserver-command=X/xserver-command=X -s 0 -dpms/g' /etc/lightdm/lightdm.conf
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to setup 10.1\" screen"
 else
 	echo_success
 fi
