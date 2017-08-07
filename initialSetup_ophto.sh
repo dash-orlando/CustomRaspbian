@@ -10,13 +10,14 @@
 #	- Downloads and unzips OpenCV source code + extra modules
 #	- Compiles and builds OpenCV
 #	- Fetches repo from Github
+#       - Enables camera interface + allocates 512 GPU memory
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Jul. 12th, 2017
+# MODIFIED	: Aug.  7th, 2017
 #
 
 ################################################################################
@@ -172,6 +173,16 @@ echo $TIMEZONE > /etc/timezone
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set timezone"
+else
+	echo_success
+fi
+
+# Enable camera interface + split GPU memory
+echo_step	"  Enabling Camera/Allocating Memory"
+sudo sed -i -e 's/start_x=0/start_x=1/g' /boot/config.txt
+sudo sed -i -e 's/gpu_mem=64/gpu_mem=512/g' /boot/config.txt
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to enable camera/allocate memory"
 else
 	echo_success
 fi
