@@ -8,7 +8,7 @@
 #	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Updates/upgrades packages
 #	- Installs dependencies and packages required for OpenCV
-#	- Upgrades and installs required pip packages
+#	- Update PIP + Packages (+ install PIP package dependencies)
 #	- Downloads and unzips OpenCV source code + extra modules
 #	- Compiles and builds OpenCV
 #	- Fetches repo from Github
@@ -18,7 +18,7 @@
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Aug.  7th, 2017
+# MODIFIED	: Aug.  8th, 2017
 #
 
 ################################################################################
@@ -161,6 +161,7 @@ echo_step	"Configuring system-wide settings"; echo
 # Keyboard
 echo_step	"  Setting keyboard to US layout"
 sudo sed -i -e 's/XKBLAYOUT="gb"/XKBLAYOUT="us"/g' /etc/default/keyboard
+sudo sed -i -e 's/XKBVARIANT=""/XKBVARIANT="us"/g' /etc/default/keyboard
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set keyboard"
 else
@@ -189,8 +190,8 @@ fi
 
 # Enable camera interface + split GPU memory
 echo_step	"  Enabling Camera/Allocating Memory"
-sudo sed -i -e 's/start_x=0/start_x=1/g' /boot/config.txt
-sudo sed -i -e 's/gpu_mem=64/gpu_mem=512/g' /boot/config.txt
+sudo sed -i '$ a start_x=1/g' /boot/config.txt
+sudo sed -i '$ a gpu_mem=512/g' /boot/config.txt
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to enable camera/allocate memory"
 else

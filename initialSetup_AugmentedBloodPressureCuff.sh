@@ -21,6 +21,7 @@
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Aug.  7th, 2017
+# MODIFIED	: Aug. 	8th, 2017
 #
 
 ################################################################################
@@ -163,6 +164,7 @@ echo_step	"Configuring system-wide settings"; echo
 # Keyboard
 echo_step	"  Setting keyboard to US layout"
 sudo sed -i -e 's/XKBLAYOUT="gb"/XKBLAYOUT="us"/g' /etc/default/keyboard
+sudo sed -i -e 's/XKBVARIANT=""/XKBVARIANT="us"/g' /etc/default/keyboard
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set keyboard"
 else
@@ -192,7 +194,7 @@ fi
 # Enable I2C + split GPU memory
 echo_step	"  Enabling I2C/Allocating Memory"
 sudo sed -i -e 's/#dtparam=i2c_arm=on/dtparam=i2c_arm=on/g' /boot/config.txt
-sudo sed -i -e 's/gpu_mem=64/gpu_mem=256/g' /boot/config.txt
+sudo sed -i '$ a gpu_mem=256/g' /boot/config.txt
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to enable I2C/allocate memory"
 else
@@ -330,6 +332,15 @@ echo_step	"  Upgrading pyserial"
 sudo pip install --upgrade pyserial >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to upgrade"
+else
+	echo_success
+fi
+
+# Install imutils
+echo_step	"  Installing imutils"
+sudo pip install imutils >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to install"
 else
 	echo_success
 fi
