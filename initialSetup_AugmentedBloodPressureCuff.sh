@@ -284,8 +284,9 @@ fi
 # Installing PyQt4 + dependencies
 ################################################################################
 echo_title 	"Required Packages and Dependencies"
+echo_step	"Installing:"; echo
 
-echo_step	"Installing PyQt4"; echo
+echo_step	"  PyQt4"
 sudo apt-get -q -y install python-qt4 python-qt4-dbus python-qt4-dev python-qt4-doc python-qt4-gl python-qt4-phonon python-qt4-sql python-qwt3d-qt4 python-qwt5-qt4 >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
@@ -293,7 +294,7 @@ else
 	echo_success
 fi
 
-echo_step	"Installing ADC dependencies"; echo
+echo_step	"  ADC dependencies"
 sudo apt-get -q -y install git build-essential python-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
@@ -301,7 +302,7 @@ else
 	echo_success
 fi
 
-echo_step	"Installing BlueTooth module"; echo
+echo_step	"  BlueTooth module"
 sudo apt-get -q -y install bluetooth python-bluez >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"

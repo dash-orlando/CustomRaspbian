@@ -250,7 +250,7 @@ fi
 ################################################################################
 echo_title 	"Required Packages and Dependencies"
 
-echo_step	"Installing development tools"; echo
+echo_step	"Installing: development tools"
 sudo apt-get -q -y install python-dev python2.7-dev build-essential cmake pkg-config >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"

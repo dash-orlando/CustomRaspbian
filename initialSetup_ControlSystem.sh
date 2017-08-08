@@ -268,8 +268,9 @@ fi
 # Installing required packages and dependencies
 ################################################################################
 echo_title 	"Required Packages and Dependencies"
+echo_step	"Installing:"; echo
 
-echo_step	"Installing BlueTooth module"; echo
+echo_step	"  BlueTooth module"
 sudo apt-get -q -y install bluetooth python-bluez >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
@@ -277,7 +278,7 @@ else
 	echo_success
 fi
 
-echo_step	"Installing development tools"; echo
+echo_step	"  Development tools"
 sudo apt-get -q -y install python-dev python2.7-dev build-essential cmake pkg-config >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
