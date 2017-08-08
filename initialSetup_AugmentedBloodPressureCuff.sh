@@ -2,18 +2,18 @@
 #
 # Automate the configuration of the Raspbian image
 # AugmentedBloodPressureCuff Version:
-#	- Sets Timezone and keyboard
+#	- Set Timezone and keyboard
 #       - Disable blank screen forever
-#  	- Allocates required GPU memory
+#  	- Allocate required GPU memory
 #	- Setup 10.1" screen
-#	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
-#	- Updates/upgrades packages
-#	- Installs packages and dependencies for:
-#		* PyQt4
-#		* ADS Unit
+#	- Purge Wolfram Alpha & LibreOffice (~1GB gain)
+#	- Update/upgrade packages
+#	- Install packages and dependencies for:
+#		- PyQt4
+#		- ADS Unit
 #	- Update PIP + Packages
-#	- Downloads and installs ADS1x15 library
-#	- Fetches repo from Github
+#	- Download and install ADS1x15 library
+#	- Fetch repo from Github
 #	- Start program on system boot
 #	- Post-setup cleanup
 #
@@ -186,7 +186,7 @@ fi
 echo_step	"  Disabling blank screen"
 sudo sed -i -e 's/#xserver-command=X/xserver-command=X -s 0 -dpms/g' /etc/lightdm/lightdm.conf
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to setup 10.1\" screen"
+	echo_warning "Failed to disable blank screen"
 else
 	echo_success
 fi
@@ -194,7 +194,7 @@ fi
 # Enable I2C + split GPU memory
 echo_step	"  Enabling I2C/Allocating Memory"
 sudo sed -i -e 's/#dtparam=i2c_arm=on/dtparam=i2c_arm=on/g' /boot/config.txt
-sudo sed -i '$ a gpu_mem=256/g' /boot/config.txt
+sudo sed -i '$ a gpu_mem=256' /boot/config.txt
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to enable I2C/allocate memory"
 else
@@ -424,6 +424,7 @@ echo_step	"  Creating launcher script"
 {
 	echo "#!/bin/sh"
 	echo "#launchOnBoot.sh"
+	echo ""
 	echo "cd /home/pi/Desktop/AugmentedBloodPressureCuff/"
 	echo "sudo python pressureDialGauge.py"
 	echo "cd /home/pi/"

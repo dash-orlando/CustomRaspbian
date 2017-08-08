@@ -2,16 +2,16 @@
 #
 # Automate the configuration of the Raspbian image
 # AugmentedOphthalmoscope Version:
-#	- Sets Timezone and keyboard
+#	- Set Timezone and keyboard
 #       - Disable blank screen forever
-#       - Enables camera interface + allocates 512 GPU memory
-#	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
-#	- Updates/upgrades packages
-#	- Installs dependencies and packages required for OpenCV
+#       - Enable camera interface + allocates 512 GPU memory
+#	- Purge Wolfram Alpha & LibreOffice (~1GB gain)
+#	- Update/upgrade packages
+#	- Install dependencies and packages required for OpenCV
 #	- Update PIP + Packages (+ install PIP package dependencies)
-#	- Downloads and unzips OpenCV source code + extra modules
-#	- Compiles and builds OpenCV
-#	- Fetches repo from Github
+#	- Download and unzip OpenCV source code + extra modules
+#	- Compile and build OpenCV
+#	- Fetch repo from Github
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
@@ -183,15 +183,15 @@ fi
 echo_step	"  Disabling blank screen"
 sudo sed -i -e 's/#xserver-command=X/xserver-command=X -s 0 -dpms/g' /etc/lightdm/lightdm.conf
 if [ "$?" -ne 0 ]; then
-	echo_warning "Failed to setup 10.1\" screen"
+	echo_warning "Failed to disable blank screen"
 else
 	echo_success
 fi
 
 # Enable camera interface + split GPU memory
 echo_step	"  Enabling Camera/Allocating Memory"
-sudo sed -i '$ a start_x=1/g' /boot/config.txt
-sudo sed -i '$ a gpu_mem=512/g' /boot/config.txt
+sudo sed -i '$ a start_x=1' /boot/config.txt
+sudo sed -i '$ a gpu_mem=512' /boot/config.txt
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to enable camera/allocate memory"
 else

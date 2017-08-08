@@ -1,19 +1,23 @@
 #!/bin/bash
 #
 # Automate the configuration of the Raspbian image
-# General Version:
-#	- Sets Timezone and keyboard
+# ControlSystem Version:
+#	- Set Timezone and keyboard
 #       - Disable blank screen forever
-#	- Purges Wolfram Alpha & LibreOffice (~1GB gain)
-#	- Updates/upgrades packages
+#  	- Enable SSH + allocates more GPU memory
+#	- Purge Wolfram Alpha & LibreOffice (~1GB gain)
+#	- Update/upgrade packages
 #	- Install packages and dependencies for:
-#		- Bluetooth module
-#		- Various development tools
+#		* Bluetooth module
+#		* Various development tools
+#	- Update PIP + Packages
+#	- Fetch repo from Github
 #	- Post-setup cleanup
 #
+# In other words, the script does ALL the work in setting up the environment
+#
 # AUTHOR	: Mohammad Odeh
-# DATE		: Jul.  5th, 2017
-# MODIFIED	: Aug.  8th, 2017
+# DATE		: Aug.  8th, 2017
 #
 
 ################################################################################
@@ -133,6 +137,11 @@ function exit_with_failure() {
 echo
 echo
 
+# Define useful variables
+GIT_USERNAME="pd3dLab"
+GIT_PASSWORD="pd3dLabatIST"
+GIT_DIRECTORY="csec/repos/"
+
 # Get current date and time
 DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
 
@@ -174,6 +183,16 @@ echo_step	"  Disabling blank screen"
 sudo sed -i -e 's/#xserver-command=X/xserver-command=X -s 0 -dpms/g' /etc/lightdm/lightdm.conf
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to disable blank screen"
+else
+	echo_success
+fi
+
+# Enable SSH + split GPU memory
+echo_step	"  Enabling SSH/Allocating Memory"
+sudo touch /boot/ssh
+sudo sed -i '$ a gpu_mem=256' /boot/config.txt
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to enable SSH/allocate memory"
 else
 	echo_success
 fi
@@ -250,6 +269,14 @@ fi
 ################################################################################
 echo_title 	"Required Packages and Dependencies"
 
+echo_step	"Installing BlueTooth module"; echo
+sudo apt-get -q -y install bluetooth python-bluez >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
 echo_step	"Installing development tools"; echo
 sudo apt-get -q -y install python-dev python2.7-dev build-essential cmake pkg-config >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
@@ -259,10 +286,10 @@ else
 fi
 
 ################################################################################
-# Installing pip and pip packages
+# Upgrading PIP & PIP packages
 ################################################################################
 echo_title 	"PIP"
-echo_step	"Installing PIP + packages"; echo
+echo_step	"Upgrading PIP & PIP packages"; echo
 cd /home/pi/
 
 # Download/Install PIP
@@ -298,6 +325,31 @@ echo_step	"  Installing imutils"
 sudo pip install imutils >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to install"
+else
+	echo_success
+fi
+
+################################################################################
+# Do stuff here if needed be
+################################################################################
+
+
+################################################################################
+# Fetch Github Repository and Setup Directories
+################################################################################
+echo_title 	"Setup Repo/Directories"
+echo_step	"Fetching repository from Github"; echo
+
+# Create directory for repo
+cd /home/pi/
+sudo mkdir -p "$GIT_DIRECTORY"
+cd /home/pi/"$GIT_DIRECTORY"
+
+echo_step 	"  Cloning into $GIT_DIRECTORY"
+# git clone https://username:password@github.com/username/repository.git
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/ControlSystem >>"$INSTALL_LOG" 2>&1
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to fetch repo"
 else
 	echo_success
 fi
