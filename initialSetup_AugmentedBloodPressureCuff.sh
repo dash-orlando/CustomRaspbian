@@ -13,6 +13,7 @@
 #		* ADS Unit
 #	- Downloads and installs ADS1x15 library
 #	- Fetches repo from Github
+#	- Start program on system boot
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
@@ -341,7 +342,7 @@ cd /home/pi/
 
 # Download source code
 echo_step	"  Downloading source code"
-sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git > "$INSTALL_LOG"
+sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git >> "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
@@ -370,7 +371,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedBloodPressureCuff >"$INSTALL_LOG" 2>&1
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedBloodPressureCuff >>"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
@@ -391,6 +392,37 @@ else
 	fi
 fi
 
+################################################################################
+# Start program on system boot
+################################################################################
+echo_title 	"Start on Boot"
+echo_step	"Appending program to autostart"; echo
+
+cd /home/pi/
+# Create launcher script
+echo_step	"  Creating launcher script"
+{
+	echo "#!/bin/sh\n#launchOnBoot.sh"
+	echo "cd /home/pi/Desktop/AugmentedBloodPressureCuff/"
+	echo "sudo python pressureDialGauge.py"
+	echo "cd /home/pi/"
+} > launchOnBoot.sh
+
+sudo chmod +x launchOnBoot.sh
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to create launcher script"
+else
+	echo_success
+fi
+
+# Appending launcher script to autostart
+echo_step	"  Adding to autostart"
+sudo sed -i '$ a ./launchOnBoot.sh' /.config/lxsession/LXDE-pi/autostart
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to append to autostart"
+else
+	echo_success
+fi
 
 ################################################################################
 # Final Steps
