@@ -301,6 +301,14 @@ else
 	echo_success
 fi
 
+echo_step	"Installing BlueTooth module"; echo
+sudo apt-get -q -y install bluetooth python-bluez >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
 ################################################################################
 # Upgrading PIP & PIP packages
 ################################################################################
