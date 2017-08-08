@@ -11,6 +11,7 @@
 #	- Installs packages and dependencies for:
 #		* PyQt4
 #		* ADS Unit
+#	- Update PIP + Packages
 #	- Downloads and installs ADS1x15 library
 #	- Fetches repo from Github
 #	- Start program on system boot
@@ -161,7 +162,7 @@ echo_step	"Configuring system-wide settings"; echo
 
 # Keyboard
 echo_step	"  Setting keyboard to US layout"
-setxkbmap us
+sudo sed -i -e 's/XKBLAYOUT="gb"/XKBLAYOUT="us"/g' /etc/default/keyboard
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set keyboard"
 else
@@ -278,6 +279,27 @@ else
 fi
 
 ################################################################################
+# Installing PyQt4 + dependencies
+################################################################################
+echo_title 	"Required Packages and Dependencies"
+
+echo_step	"Installing PyQt4"; echo
+sudo apt-get -q -y install python-qt4 python-qt4-dbus python-qt4-dev python-qt4-doc python-qt4-gl python-qt4-phonon python-qt4-sql python-qwt3d-qt4 python-qwt5-qt4 >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+echo_step	"Installing ADC dependencies"; echo
+sudo apt-get -q -y install git build-essential python-dev >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+################################################################################
 # Upgrading PIP & PIP packages
 ################################################################################
 echo_title 	"PIP"
@@ -313,27 +335,6 @@ else
 fi
 
 ################################################################################
-# Installing PyQt4 + dependencies
-################################################################################
-echo_title 	"Required Packages and Dependencies"
-
-echo_step	"Installing PyQt4"; echo
-sudo apt-get -q -y install python-qt4 python-qt4-dbus python-qt4-dev python-qt4-doc python-qt4-gl python-qt4-phonon python-qt4-sql python-qwt3d-qt4 python-qwt5-qt4 >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-echo_step	"Installing ADC dependencies"; echo
-sudo apt-get -q -y install git build-essential python-dev >>"$INSTALL_LOG"
-if [ "$?" -ne 0 ]; then
-	echo_warning "Something went wrong"
-else
-	echo_success
-fi
-
-################################################################################
 # Download ADS1x15 Library
 ################################################################################
 echo_title 	"ADS1x15 Library"
@@ -342,7 +343,7 @@ cd /home/pi/
 
 # Download source code
 echo_step	"  Downloading source code"
-sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git >> "$INSTALL_LOG"
+sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git >> "$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
@@ -402,7 +403,8 @@ cd /home/pi/
 # Create launcher script
 echo_step	"  Creating launcher script"
 {
-	echo "#!/bin/sh\n#launchOnBoot.sh"
+	echo "#!/bin/sh"
+	echo "#launchOnBoot.sh"
 	echo "cd /home/pi/Desktop/AugmentedBloodPressureCuff/"
 	echo "sudo python pressureDialGauge.py"
 	echo "cd /home/pi/"
@@ -417,7 +419,7 @@ fi
 
 # Appending launcher script to autostart
 echo_step	"  Adding to autostart"
-sudo sed -i '$ a ./launchOnBoot.sh' /.config/lxsession/LXDE-pi/autostart
+sudo sed -i '$ a ./launchOnBoot.sh' .config/lxsession/LXDE-pi/autostart
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to append to autostart"
 else

@@ -147,7 +147,7 @@ echo_step	"Configuring system-wide settings"; echo
 
 # Keyboard
 echo_step	"  Setting keyboard to US layout"
-setxkbmap us
+sudo sed -i -e 's/XKBLAYOUT="gb"/XKBLAYOUT="us"/g' /etc/default/keyboard
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to set keyboard"
 else
