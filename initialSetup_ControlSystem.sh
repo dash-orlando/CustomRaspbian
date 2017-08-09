@@ -4,12 +4,12 @@
 # ControlSystem Version:
 #	- Set Timezone and keyboard
 #       - Disable blank screen forever
-#  	- Enable SSH + allocates more GPU memory
+#  	- Enable SSH + allocate more GPU memory
 #	- Purge Wolfram Alpha & LibreOffice (~1GB gain)
 #	- Update/upgrade packages
 #	- Install packages and dependencies for:
-#		* Bluetooth module
-#		* Various development tools
+#		- Bluetooth module
+#		- Various development tools
 #	- Update PIP + Packages
 #	- Fetch repo from Github
 #	- Post-setup cleanup
@@ -18,6 +18,7 @@
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Aug.  8th, 2017
+# MODIFIED	: Aug.  9th, 2017
 #
 
 ################################################################################
