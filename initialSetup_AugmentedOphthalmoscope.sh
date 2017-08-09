@@ -141,6 +141,7 @@ echo
 # Define useful variables
 GIT_USERNAME="pd3dLab"
 GIT_PASSWORD="pd3dLabatIST"
+GIT_REPONAME="AugmentedOphthalmoscope"
 GIT_DIRECTORY="csec/repos/"
 
 # Get current date and time
@@ -472,7 +473,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedOphthalmoscope >"$INSTALL_LOG" 2>&1
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/"$GIT_REPONAME" >"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
@@ -481,11 +482,11 @@ else
 	# Create a user-friendly local copy on Desktop
 	echo_step	"  Creating local directory"; echo
 	cd /home/pi/
-	sudo mkdir AugmentedOphthalmoscope
+	sudo mkdir "$GIT_REPONAME"
 
 	# Copy program
 	echo_step	"    Copying program"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedOphthalmoscope/Software/Python/Stable /home/pi/Desktop/AugmentedOphthalmoscope/
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/Stable /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
@@ -494,7 +495,7 @@ else
 	
 	# Copy overlays
 	echo_step	"    Copying overlays"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedOphthalmoscope/Images/Ophthalmoscope_images/Alpha /home/pi/Desktop/AugmentedOphthalmoscope/
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Images/Ophthalmoscope_images/Alpha /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else

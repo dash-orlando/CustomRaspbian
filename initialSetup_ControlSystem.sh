@@ -140,6 +140,7 @@ echo
 # Define useful variables
 GIT_USERNAME="pd3dLab"
 GIT_PASSWORD="pd3dLabatIST"
+GIT_REPONAME="ControlSystem"
 GIT_DIRECTORY="csec/repos/"
 
 # Get current date and time
@@ -348,7 +349,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/ControlSystem >>"$INSTALL_LOG" 2>&1
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/"$GIT_REPONAME" >>"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else

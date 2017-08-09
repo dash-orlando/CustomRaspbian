@@ -144,6 +144,7 @@ echo
 # Define useful variables
 GIT_USERNAME="pd3dLab"
 GIT_PASSWORD="pd3dLabatIST"
+GIT_REPONAME="AugmentedBloodPressureCuff"
 GIT_DIRECTORY="csec/repos/"
 
 # Get current date and time
@@ -392,7 +393,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/AugmentedBloodPressureCuff >>"$INSTALL_LOG" 2>&1
+sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/"$GIT_REPONAME" >>"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
@@ -401,11 +402,11 @@ else
 	# Create a user-friendly local copy on Desktop
 	echo_step	"  Creating local directory"; echo
 	cd /home/pi/
-	sudo mkdir AugmentedBloodPressureCuff
+	sudo mkdir "$GIT_REPONAME"
 
 	# Copy program
 	echo_step	"    Copying program"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/AugmentedBloodPressureCuff/Software/Python /home/pi/Desktop/AugmentedBloodPressureCuff/
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
@@ -426,7 +427,7 @@ echo_step	"  Creating launcher script"
 	echo "#!/bin/sh"
 	echo "#launchOnBoot.sh"
 	echo ""
-	echo "cd /home/pi/Desktop/AugmentedBloodPressureCuff/"
+	echo "cd /home/pi/Desktop/"$GIT_REPONAME"/"
 	echo "sudo python pressureDialGauge.py"
 	echo "cd /home/pi/"
 } > launchOnBoot.sh
