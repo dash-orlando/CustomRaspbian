@@ -471,6 +471,6 @@ sleep 5
 echo_step	"Rebooting in 5"; sleep 1
 echo_step	", 4"; sleep 1
 echo_step	", 3"; sleep 1
-echo_step   ", 2"; sleep 1
-echo_step   ", 1"; sleep 1
+echo_step   	", 2"; sleep 1
+echo_step   	", 1"; sleep 1
 sudo reboot

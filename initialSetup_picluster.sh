@@ -357,9 +357,10 @@ echo_title 	"Setup SSH"
 echo_step	"Generating RSA key and creating configuration file"; echo
 
 # Change user and group ownership from root to pi
+cd /home/pi/
+sudo chown -R pi:pi .
 cd "$GIT_DIRECTORY"/"$GIT_REPONAME"/
 echo_step	"  Changing user:group ownership to pi"
-sudo chown -R pi:pi .
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to change ownership"
 else
@@ -369,20 +370,23 @@ fi
 # Generate RSA key
 cd "$GIT_DIRECTORY"/"$GIT_REPONAME"/keys/
 echo_step	"  Generate RSA key"
-openssl rsa -in flobofenoglietto_id_rsa_1 -passin file:flobofenoglietto_passphrase_1.txt -out key
+openssl rsa -in flobofenoglietto_id_rsa_1 -passin file:flobofenoglietto_passphrase_1.txt -out key 2>>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
         echo_warning "Failed to generate key"
 else
         echo_success
+	mkdir /home/pi/.ssh/
+	echo_step	"	  Copying RSA key to SSH directory"
 	cp key /home/pi/.ssh/
 	if [ "$?" -ne 0 ]; then
-        	echo_warning "Failed to copy key to ssh folder"
+        	echo_warning "Failed to copy key to SSH folder"
 	else
         	echo_success
 	fi
 fi
 
 # Create configuration file
+
 cd /home/pi/.ssh/
 echo_step	"  Creating configuration file"
 {
@@ -422,6 +426,6 @@ sleep 5
 echo_step	"Rebooting in 5"; sleep 1
 echo_step	", 4"; sleep 1
 echo_step	", 3"; sleep 1
-echo_step   ", 2"; sleep 1
-echo_step   ", 1"; sleep 1
+echo_step   	", 2"; sleep 1
+echo_step   	", 1"; sleep 1
 sudo reboot
