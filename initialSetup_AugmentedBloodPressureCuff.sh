@@ -13,6 +13,7 @@
 #		- ADS Unit
 #	- Update PIP + Packages
 #	- Download and install ADS1x15 library
+#	- Installs appJar for GUI creation
 #	- Fetch repo from Github
 #	- Start program on system boot
 #	- Post-setup cleanup
@@ -20,8 +21,8 @@
 # In other words, the script does ALL the work in setting up the environment
 #
 # AUTHOR	: Mohammad Odeh
-# DATE		: Aug.  7th, 2017
-# MODIFIED	: Aug. 	8th, 2017
+# DATE		: Aug.  07th, 2017
+# MODIFIED	: Nov. 	21st, 2017
 #
 
 ################################################################################
@@ -355,6 +356,15 @@ else
 	echo_success
 fi
 
+# Install appJar
+echo_step	"  Installing appJar"
+sudo pip install appjar >>"$INSTALL_LOG"
+if [ "$?" -ne 0]; then
+	echo_warning "Failed to install"
+else
+	echo_success
+fi
+
 ################################################################################
 # Download ADS1x15 Library
 ################################################################################
@@ -364,7 +374,7 @@ cd /home/pi/
 
 # Download source code
 echo_step	"  Downloading source code"
-sudo git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git >> "$INSTALL_LOG" 2>&1
+git clone https://github.com/adafruit/Adafruit_Python_ADS1x15.git >> "$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
@@ -393,7 +403,7 @@ cd /home/pi/"$GIT_DIRECTORY"
 
 echo_step 	"  Cloning into $GIT_DIRECTORY"
 # git clone https://username:password@github.com/username/repository.git
-sudo git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/"$GIT_REPONAME" >>"$INSTALL_LOG" 2>&1
+git clone https://"$GIT_USERNAME":"$GIT_PASSWORD"@github.com/pd3d/"$GIT_REPONAME" >>"$INSTALL_LOG" 2>&1
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to fetch repo"
 else
@@ -401,12 +411,12 @@ else
 
 	# Create a user-friendly local copy on Desktop
 	echo_step	"  Creating local directory"; echo
-	cd /home/pi/
+	cd /home/pi/Desktop/
 	sudo mkdir "$GIT_REPONAME"
 
 	# Copy program
 	echo_step	"    Copying program"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python /home/pi/Desktop/"$GIT_REPONAME"/
+	cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
