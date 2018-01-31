@@ -365,6 +365,15 @@ else
 	echo_success
 fi
 
+# Install pexpect
+echo_step	"  Installing pexpect"
+sudo pip install pexpect >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to install"
+else
+	echo_success
+fi
+
 ################################################################################
 # Download ADS1x15 Library
 ################################################################################
@@ -416,7 +425,7 @@ else
 
 	# Copy program
 	echo_step	"    Copying program"
-	cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python /home/pi/Desktop/"$GIT_REPONAME"/
+	cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/ /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
@@ -463,6 +472,16 @@ fi
 ################################################################################
 echo_title 	"Clean Up"
 echo_step	"Cleaning up"; echo
+
+# Reset ownership to pi instead of root
+echo_step	"  Changing ownership to user (pi)"
+cd /home/pi/
+sudo chown -R pi:pi . >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to change permissions"
+else
+	echo_success
+fi
 
 # Clean cache
 echo_step	"  Cleaning caches"
