@@ -363,6 +363,16 @@ fi
 echo_title 	"Clean Up"
 echo_step	"Cleaning up"; echo
 
+# Reset ownership to pi instead of root
+echo_step	"  Changing ownership to user (pi)"
+cd /home/pi/
+sudo chown -R pi:pi . >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to change permissions"
+else
+	echo_success
+fi
+
 # Clean cache
 echo_step	"  Cleaning caches"
 sudo apt-get -q -y autoclean >>"$INSTALL_LOG"
