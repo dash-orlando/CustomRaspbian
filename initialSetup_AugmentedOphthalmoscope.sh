@@ -17,11 +17,11 @@
 # In other words, the script does ALL the work in setting up the environment
 #
 # CHANGELOG:
-# 	- Move away from OpenCV 3.1.0 to 3.4.0
+# 	- Move away from OpenCV 3.1.0 to 3.3.0
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Feb. 16th, 2018
+# MODIFIED	: Feb. 19th, 2018
 #
 
 ################################################################################
@@ -284,7 +284,7 @@ else
 fi
 
 echo_step	"  Installing: Image I/O packages"
-sudo apt-get -q -y install libjpeg8-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -292,7 +292,7 @@ else
 fi
 
 echo_step	"  Installing: GTK development library"
-sudo apt-get -q -y install libgtk2.0-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libgtk2.0-dev libgtk-3-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -382,9 +382,9 @@ echo_title 	"OpenCV Source Code"
 echo_step	"Downloading OpenCV source code + extra modules"; echo
 cd /home/pi/
 
-# Download OpenCV (ver3.4.0) source code
+# Download OpenCV (ver3.3.0) source code
 echo_step	"  Downloading source code"
-sudo wget -O /home/pi/opencv.zip https://github.com/opencv/opencv/archive/3.4.0.zip -a "$INSTALL_LOG"
+sudo wget -O /home/pi/opencv.zip https://github.com/opencv/opencv/archive/3.3.0.zip -a "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
@@ -399,9 +399,9 @@ else
 	fi
 fi
 
-# Download OpenCV (ver3.4.0) extra modules
+# Download OpenCV (ver3.3.0) extra modules
 echo_step	"  Downloading extra modules"
-sudo wget -O /home/pi/opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.4.0.zip -a "$INSTALL_LOG"
+sudo wget -O /home/pi/opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/3.3.0.zip -a "$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Failed to download from source"
 else
@@ -423,9 +423,9 @@ echo_title 	"Compile"
 echo_step	"Compiling/building OpenCV using 2 cores"; echo
 
 # Navigate to proper build directory
-cd /home/pi/opencv-3.4.0/
+cd /home/pi/opencv-3.3.0/
 sudo mkdir build
-cd /home/pi/opencv-3.4.0/build/
+cd /home/pi/opencv-3.3.0/build/
 
 # Compile
 # NOTE: TBB and OpenMP are enabled to improve FPS.
@@ -440,7 +440,7 @@ sudo cmake \
 -D INSTALL_C_EXAMPLES=OFF \
 -D INSTALL_PYTHON_EXAMPLES=ON \
 -D BUILD_EXAMPLES=ON \
--D OPENCV_EXTRA_MODULES_PATH=/home/pi/opencv_contrib-3.4.0/modules ..
+-D OPENCV_EXTRA_MODULES_PATH=/home/pi/opencv_contrib-3.3.0/modules ..
 
 # Insert newline for aesthetics
 echo
