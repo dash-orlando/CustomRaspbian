@@ -17,9 +17,12 @@
 #
 # In other words, the script does ALL the work in setting up the environment
 #
+# CHANGELOG:
+# 	- Update script to accomodate changes in Raspbian Stretch
+#
 # AUTHOR	: Mohammad Odeh
 # DATE		: Aug.  9th, 2017
-#
+# MODIFIED	: Feb. 23rd, 2018
 
 ################################################################################
 # Terminal output helpers
@@ -259,7 +262,7 @@ fi
 
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update >>"$INSTALL_LOG"
+sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -408,6 +411,16 @@ fi
 ################################################################################
 echo_title 	"Clean Up"
 echo_step	"Cleaning up"; echo
+
+# Reset ownership to pi instead of root
+echo_step	"  Changing ownership to user (pi)"
+cd /home/pi/
+sudo chown -R pi:pi . >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to change permissions"
+else
+	echo_success
+fi
 
 # Clean cache
 echo_step	"  Cleaning caches"

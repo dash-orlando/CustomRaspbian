@@ -16,9 +16,12 @@
 #
 # In other words, the script does ALL the work in setting up the environment
 #
+# CHANGELOG:
+# 	- Update script to accomodate changes in Raspbian Stretch
+#
 # AUTHOR	: Mohammad Odeh
 # DATE		: Aug.  8th, 2017
-# MODIFIED	: Aug.  9th, 2017
+# MODIFIED	: Feb. 23rd, 2018
 #
 
 ################################################################################
@@ -259,7 +262,7 @@ fi
 
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update >>"$INSTALL_LOG"
+sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else

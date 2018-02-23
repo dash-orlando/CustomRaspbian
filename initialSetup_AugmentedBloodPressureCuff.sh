@@ -14,15 +14,19 @@
 #	- Update PIP + Packages
 #	- Download and install ADS1x15 library
 #	- Installs appJar for GUI creation
+# 	- Installs pexpect for spawning and STDOUT redirection of python scripts
 #	- Fetch repo from Github
 #	- Start program on system boot
 #	- Post-setup cleanup
 #
 # In other words, the script does ALL the work in setting up the environment
 #
+# CHANGELOG:
+# 	- Update script to accomodate changes in Raspbian Stretch
+#
 # AUTHOR	: Mohammad Odeh
-# DATE		: Aug.  07th, 2017
-# MODIFIED	: Nov. 	21st, 2017
+# DATE		: Aug.  7th, 2017
+# MODIFIED	: Feb. 23rd, 2018
 #
 
 ################################################################################
@@ -275,7 +279,7 @@ fi
 
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update >>"$INSTALL_LOG"
+sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -425,7 +429,7 @@ else
 
 	# Copy program
 	echo_step	"    Copying program"
-	cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/ /home/pi/Desktop/"$GIT_REPONAME"/
+	cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/* /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else

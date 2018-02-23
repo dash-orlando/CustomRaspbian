@@ -12,9 +12,12 @@
 #	- Update PIP + Packages
 #	- Post-setup cleanup
 #
+# CHANGELOG:
+# 	- Update script to accomodate changes in Raspbian Stretch
+#
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Aug.  8th, 2017
+# MODIFIED	: Feb. 23rd, 2018
 #
 
 ################################################################################
@@ -239,7 +242,7 @@ fi
 
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update >>"$INSTALL_LOG"
+sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -247,17 +250,27 @@ else
 fi
 
 ################################################################################
-# Installing required packages and dependencies
+# Installing some packages and dependencies that are nice to have
 ################################################################################
-echo_title 	"Required Packages and Dependencies"
+echo_title 	"General Use Packages and Dependencies"
+echo_step	"Installing:"; echo
 
-echo_step	"Installing: development tools"
+echo_step	"  BlueTooth module"
+sudo apt-get -q -y install bluetooth python-bluez >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+echo_step	"  Development tools"
 sudo apt-get -q -y install python-dev python2.7-dev build-essential cmake pkg-config >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
 	echo_success
 fi
+
 
 ################################################################################
 # Installing pip and pip packages

@@ -18,10 +18,12 @@
 #
 # CHANGELOG:
 # 	- Move away from OpenCV 3.1.0 to 3.3.0
+# 	- Fix required dependencies for OpenCV to run on Raspbian Stretch
+# 	- Workaround to avoid hang-ups when compiling on all 4-cores
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Jul.  5th, 2017
-# MODIFIED	: Feb. 19th, 2018
+# MODIFIED	: Feb. 23rd, 2018
 #
 
 ################################################################################
@@ -262,7 +264,7 @@ fi
 
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
-sudo rpi-update >>"$INSTALL_LOG"
+sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -284,7 +286,7 @@ else
 fi
 
 echo_step	"  Installing: Image I/O packages"
-sudo apt-get -q -y install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libjpeg8-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -292,7 +294,7 @@ else
 fi
 
 echo_step	"  Installing: GTK development library"
-sudo apt-get -q -y install libgtk2.0-dev libgtk-3-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libgtk2.0-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -420,12 +422,35 @@ fi
 # Compiling and Building OpenCV
 ################################################################################
 echo_title 	"Compile"
-echo_step	"Compiling/building OpenCV using 2 cores"; echo
+echo_step	"Compiling/building OpenCV using 4 cores"; echo
 
 # Navigate to proper build directory
 cd /home/pi/opencv-3.3.0/
 sudo mkdir build
 cd /home/pi/opencv-3.3.0/build/
+
+# Change swapfile size to avoid hang-ups
+echo_step	"  Changing swapsize file from 100 to 1024"
+sudo sed -i -e 's/CONF_SWAPSIZE=100/CONF_SWAPSIZE=1024/g' /etc/dphys-swapfile
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to change swapfile size"
+else
+	echo_success
+fi
+
+# Restart swap service
+echo_step	"  Restarting swap service..."
+sudo /etc/init.d/dphys-swapfile stop >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to stop service"
+else
+	sudo /etc/init.d/dphys-swapfile start >>"$INSTALL_LOG"
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to start service"
+	else
+		echo_success
+	fi
+fi
 
 # Compile
 # NOTE: TBB and OpenMP are enabled to improve FPS.
@@ -445,9 +470,9 @@ sudo cmake \
 # Insert newline for aesthetics
 echo
 
-# Build using 2 cores to avoid build errors
+# Build using 4 cores for faster compile time
 echo_step	"  Building..."; echo
-sudo make -j2
+sudo make -j4
 if [ "$?" -ne 0 ]; then
 	echo_warning "Build: ERROR"
 else
@@ -462,6 +487,30 @@ if [ "$?" -ne 0 ]; then
 else
 	echo; echo_step "Install: DONE"; echo_success
 fi
+
+# Change swapfile size back to avoid burning the SD card
+echo_step	"  Changing swapsize file from 1024 to 100"
+sudo sed -i -e 's/CONF_SWAPSIZE=1024/CONF_SWAPSIZE=100/g' /etc/dphys-swapfile
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to change swapfile size"
+else
+	echo_success
+fi
+
+# Restart swap service
+echo_step	"  Restarting swap service..."
+sudo /etc/init.d/dphys-swapfile stop >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to stop service"
+else
+	sudo /etc/init.d/dphys-swapfile start >>"$INSTALL_LOG"
+	if [ "$?" -ne 0 ]; then
+		echo_warning "Failed to start service"
+	else
+		echo_success
+	fi
+fi
+
 
 ################################################################################
 # Fetch Github Repository and Setup Directories
@@ -484,12 +533,12 @@ else
 
 	# Create a user-friendly local copy on Desktop
 	echo_step	"  Creating local directory"; echo
-	cd /home/pi/
+	cd /home/pi/Desktop/
 	sudo mkdir "$GIT_REPONAME"
 
 	# Copy program
 	echo_step	"    Copying program"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/Stable /home/pi/Desktop/"$GIT_REPONAME"/
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Software/Python/Stable/* /home/pi/Desktop/"$GIT_REPONAME"/
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
