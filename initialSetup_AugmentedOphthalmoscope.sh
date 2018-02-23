@@ -294,7 +294,7 @@ else
 fi
 
 echo_step	"  Installing: GTK development library"
-sudo apt-get -q -y install libgtk2.0-dev libgtk3.0-dev libcanberra-gtk* >>"$INSTALL_LOG"
+sudo apt-get -q -y install libgtk2.0-dev libgtk3-dev libcanberra-gtk* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
