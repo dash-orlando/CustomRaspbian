@@ -286,7 +286,7 @@ else
 fi
 
 echo_step	"  Installing: Image I/O packages"
-sudo apt-get -q -y install libjpeg8-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -294,7 +294,7 @@ else
 fi
 
 echo_step	"  Installing: GTK development library"
-sudo apt-get -q -y install libgtk2.0-dev >>"$INSTALL_LOG"
+sudo apt-get -q -y install libgtk2.0-dev libgtk3.0-dev libcanberra-gtk* >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
@@ -453,14 +453,14 @@ else
 fi
 
 # Compile
-# NOTE: TBB and OpenMP are enabled to improve FPS.
+# NOTE: NEON, VFPV3, and OpenMP are enabled to optimize build for speed.
 echo_step 	"  Compiling"; echo
 sudo cmake \
 -D CMAKE_BUILD_TYPE=RELEASE \
--D BUILD_TBB=ON \
--D WITH_TBB=ON \
 -D WITH_OPENMP=ON \
 -D WITH_OPENGL=ON \
+-D ENABLE_NEON=ON \
+-D ENABLE_VFPV3=ON \
 -D CMAKE_INSTALL_PREFIX=/usr/local \
 -D INSTALL_C_EXAMPLES=OFF \
 -D INSTALL_PYTHON_EXAMPLES=ON \
