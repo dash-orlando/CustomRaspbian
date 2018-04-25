@@ -19,10 +19,12 @@
 #
 # CHANGELOG:
 # 	- Update script to accomodate changes in Raspbian Stretch
+# 	- Fix issue with packages index being cleared for some reason
 #
 # AUTHOR	: Mohammad Odeh
-# DATE		: Aug.  9th, 2017
-# MODIFIED	: Feb. 23rd, 2018
+# DATE		: Aug.  7th, 2017
+# MODIFIED	: Apr. 25th, 2018
+#
 
 ################################################################################
 # Terminal output helpers
@@ -263,6 +265,15 @@ fi
 # Update RPi kernel
 echo_step	"  Updating Kernel"; echo
 sudo SKIP_WARNING=1 rpi-update >>"$INSTALL_LOG"
+if [ "$?" -ne 0 ]; then
+	echo_warning "Something went wrong"
+else
+	echo_success
+fi
+
+# Update packages index again in case the index got cleaned for some reason
+echo_step	"  Updating packages index...again!"
+sudo apt-get -q -y update >>"$INSTALL_LOG"
 if [ "$?" -ne 0 ]; then
 	echo_warning "Something went wrong"
 else
