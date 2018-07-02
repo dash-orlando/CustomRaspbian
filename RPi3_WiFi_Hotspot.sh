@@ -101,4 +101,4 @@ iptables -A FORWARD -i wlan0 -o $ADAPTER -j ACCEPT
 sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
 
-sed -i -e 's/exit 0/iptables-restore < /etc/iptables.ipv4.nat/g' /etc/rc.local
+sed -i -e 's/exit 0/iptables-restore < \/etc\/iptables.ipv4.nat\nexit 0/g' /etc/rc.local
