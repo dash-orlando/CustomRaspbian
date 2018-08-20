@@ -21,10 +21,11 @@
 # 	- Fix required dependencies for OpenCV to run on Raspbian Stretch
 # 	- Workaround to avoid hang-ups when compiling on all 4-cores
 # 	- Fix issue with packages index being cleared for some reason
+# 	- Create launchOnBoot.sh from within script
 #
 # AUTHOR	: Mohammad Odeh
 # DATE		: Aug.  7th, 2017
-# MODIFIED	: Apr. 25th, 2018
+# MODIFIED	: Aug. 20th, 2018
 #
 
 ################################################################################
@@ -148,7 +149,7 @@ echo
 GIT_USERNAME="pd3dLab"
 GIT_PASSWORD="pd3dLabatIST"
 GIT_REPONAME="AugmentedOphthalmoscope"
-GIT_DIRECTORY="csec/repos/"
+GIT_DIRECTORY="pd3d/csec/repos/"
 
 # Get current date and time
 DATETIME=$(date "+%Y-%m-%d-%H-%M-%S")
@@ -557,7 +558,8 @@ else
 	
 	# Copy overlays
 	echo_step	"    Copying overlays"
-	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Images/Ophthalmoscope_images/Alpha /home/pi/Desktop/"$GIT_REPONAME"/
+	sudo mkdir /home/pi/Desktop/"$GIT_REPONAME"/Alpha
+	sudo cp -r /home/pi/"$GIT_DIRECTORY"/"$GIT_REPONAME"/Images/Ophthalmoscope_images/Alpha/Blurred/* /home/pi/Desktop/"$GIT_REPONAME"/Alpha
 	if [ "$?" -ne 0 ]; then
 		echo_warning "Failed to copy"
 	else
@@ -565,6 +567,39 @@ else
 	fi
 fi
 
+################################################################################
+# Start program on system boot
+################################################################################
+echo_title 	"Start on Boot"
+echo_step	"Appending program to autostart"; echo
+
+cd /home/pi/
+# Create launcher script
+echo_step	"  Creating launcher script"
+{
+	echo "#!/bin/sh"
+	echo "#launchOnBoot.sh"
+	echo ""
+	echo "cd /home/pi/Desktop/"$GIT_REPONAME"/"
+	echo "sudo python liveFeed_v1.0.py --overlay ./Alpha/Retina_w_blur_v3.png"
+	echo "cd /home/pi/"
+} > launchOnBoot.sh
+
+sudo chmod +x launchOnBoot.sh
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to create launcher script"
+else
+	echo_success
+fi
+
+# Appending launcher script to autostart
+echo_step	"  Adding to autostart"
+sudo sed -i '$ a ./launchOnBoot.sh' .config/lxsession/LXDE-pi/autostart
+if [ "$?" -ne 0 ]; then
+	echo_warning "Failed to append to autostart"
+else
+	echo_success
+fi
 
 ################################################################################
 # Final Steps
